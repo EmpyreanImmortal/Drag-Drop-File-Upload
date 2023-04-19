@@ -1,9 +1,9 @@
 from urllib.parse import urlparse
 
-with open('resources/c_sites.txt', 'r') as f:
+with open('Fact-Checker-main/resources/c_sites.txt', 'r') as f:
     c_sites = f.read().split('\n')
 
-with open('resources/c_sites_weights.txt', 'r') as f:
+with open('Fact-Checker-main/resources/c_sites_weights.txt', 'r') as f:
     site_weights = f.read().split('\n')
     # reverses weights so that more credible sites are lighter and fit into knapsack
     site_weights.reverse()

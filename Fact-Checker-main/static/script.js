@@ -5,6 +5,8 @@ let container = document.querySelector(".container");
 let error = document.getElementById("error");
 let imageDisplay = document.getElementById("image-display");
 let resetDisplay = document.getElementById("image-display");
+let reseDisplay = document.getElementById("output_display");
+let resDisplay = document.getElementById("headline-input");
 
 const fileHandler = (file, name, type) => {
   if (type.split("/")[0] !== "image") {
@@ -81,17 +83,6 @@ container.addEventListener(
   false
 );
 
-// button_check.addEventListener('submit', (event) => {
-
-//   // handle the form data
-//   fetch('http://127.0.0.1:5000/predict', {
-//     method: 'POST',
-//     mode: 'cors',
-//     headers: {
-//       'Content-Type': 'application/json'
-//     },
-//   })
-// });
 
 window.onload = () => {
   error.innerText = "";

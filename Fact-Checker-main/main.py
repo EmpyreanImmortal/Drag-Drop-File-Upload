@@ -6,8 +6,7 @@ from google_scraper import GoogleScraper
 from knapsack_checker import KnapsackChecker
 import warnings
 import logging
-
-
+os.environ['TOKENIZERS_PARALLELISM'] = 'true'  # or 'false'
 
 class SearchResultException(Exception):
     def __init__(self, *args, **kwargs):
@@ -40,79 +39,96 @@ def check(text, c, gs, sc):
         raise Exception('Image did not yield any results on google, try a picture with better quality and clearer text')
 
 def main(img):
-
-    ocr = ImageReader()
-    # print('extracting text from image')
-    text = ocr.read_img(img)
-    # print("extracted:", text)
-    # print('correcting text')
-    return text
-
-    # c = TextCorrector()
-
-    # logger.disabled = True
-    # corrected = c.correct(text)
-    # article = c.decide_text(text, corrected)
-
-    # gs = GoogleScraper()
-    # sc = SimilarityChecker()
-
-    # t_sim_rating, b_sim_rating, urls = check(article, c, gs, sc)
-    # logger.disabled = False
-    # kc = KnapsackChecker(t_sim_rating, urls)
-    # res_url_wts, res_sim, full_res_sites = kc.checker()
-    # print(res_sim)
-    # pred = kc.truth_checker_k(res_sim, len(res_url_wts))
-
-    # return pred, full_res_sites, urls
-
-if __name__ == "__main__":
     logger = logging.getLogger()
     logging.disable(logging.CRITICAL)
-    # path for image, this is where you add your image
-    # for the dropbox thing
 
-    #real_img_path = 'news dataset/real news/elon.jpg'
-    #fake_img_path = 'news dataset/fake news/mark.jpg'
-    img_path = "image"
+    ocr = ImageReader()
+    print('extracting text from image')
+    text = ocr.read_img(img)
+    print("extracted:", text)
+    print('correcting text')
 
+    c = TextCorrector()
 
+    logger.disabled = True
+    corrected = c.correct(text)
+    article = c.decide_text(text, corrected)
 
-    # u can erase these two lines
-    # ------------
-    # imgs = os.listdir(path)
-    # img = os.path.join(path, imgs[6])
-    # -------------
+    gs = GoogleScraper()
+    sc = SimilarityChecker()
+
+    t_sim_rating, b_sim_rating, urls = check(article, c, gs, sc)
+    logger.disabled = False
+    kc = KnapsackChecker(t_sim_rating, urls)
+    res_url_wts, res_sim, sites = kc.checker()
+    print(res_sim)
+    prediction = kc.truth_checker_k(res_sim, len(res_url_wts))
+
+    logger = logging.getLogger()
+    logging.disable(logging.CRITICAL)
     try:
-        prediction, sites, urls = main(img_path)
 
         if prediction == 'Real':
-            print('We predict that this is', prediction)
-            print('These are the articles from credible sites that we ran across when searching for this image: ')
-            for site in sites:
-                print(site)
+            return f'''We predict that this is', {prediction}.
+                      These are the articles from credible sites that we ran across when searching for this image: 
+                     {sites}'''
+
 
         elif prediction == 'Risky' and sites:
-            print('We predict that this is', prediction + '.', 'Please do more research regarding this topic')
-            print('These are the articles from credible sites that we ran across when searching for this image: ')
-            for site in sites:
-                print(site)
+            return f'''We predict that this is', {prediction}. Please do more research regarding this topic
+                       These are the articles from credible sites that we ran across when searching for this image
+                       {sites}'''
 
         elif prediction == 'Risky' and not sites:
-            print('We predict that this is a', prediction + ' article.', 'Please do more research regarding this topic')
-            print('There were no credible websites that appeared while searching for this image')
-            print('These are the risky websites that came up when searching: ')
-            for url in urls:
-                print(url)
+            return f'''We predict that this is a {prediction} article. Please do more research regarding this topic
+                       There were no credible websites that appeared while searching for this image
+                       These are the risky websites that came up when searching: 
+                       {urls}'''
 
-        print(
-            'Please note that this is not perfect, the text corrector/summarizer may get words wrong and these terms will get searched, returning inaccurate results.')
     except Exception as e:
         print(e)
 
+def main2(input_text):
+    logger = logging.getLogger()
+    logging.disable(logging.CRITICAL)
+
+    # Extract text from headline input
+    text = input_text
+
+    c = TextCorrector()
+    corrected = c.correct(text)
+    article = c.decide_text(text, corrected)
+
+    gs = GoogleScraper()
+    sc = SimilarityChecker()
+
+    t_sim_rating, b_sim_rating, urls = check(article, c, gs, sc)
+    kc = KnapsackChecker(t_sim_rating, urls)
+    res_url_wts, res_sim, sites = kc.checker()
+
+    prediction = kc.truth_checker_k(res_sim, len(res_url_wts))
+
+    logger = logging.getLogger()
+    logging.disable(logging.CRITICAL)
+
+    try:
+
+        if prediction == 'Real':
+            return f'''We predict that this is', {prediction}.
+                      These are the articles from credible sites that we ran across when searching for this image: 
+                     {sites}'''
 
 
+        elif prediction == 'Risky' and sites:
+            return f'''We predict that this is', {prediction}. Please do more research regarding this topic
+                       These are the articles from credible sites that we ran across when searching for this image
+                       {sites}'''
 
+        elif prediction == 'Risky' and not sites:
+            return f'''We predict that this is a {prediction} article. Please do more research regarding this topic
+                       There were no credible websites that appeared while searching for this image
+                       These are the risky websites that came up when searching: 
+                       {urls}'''
 
-
-
+    except Exception as e:
+        print(e)

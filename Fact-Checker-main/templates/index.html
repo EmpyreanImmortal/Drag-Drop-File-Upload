@@ -44,29 +44,85 @@
 
     <!-- Script -->
     <script src="/static/script.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
 
     <!-- Buttons for checking and reset -->
     <script>
-      function clearcontent(elementID) {
+      function clearcontent(elementID, outputID) {
           document.getElementById(elementID).innerHTML = "";
+
+          document.getElementById(outputID).innerHTML = "";
           
       }
       
     </script>
     
-    <button class="button button_reset" onclick = "clearcontent('image-display')">Reset</button>
-
-
-  
-
+    <button class="button button_reset" onclick = "clearcontent('image-display', 'output_display')">Reset</button>
 
       <!-- Output box for the prediction result -->
-    <form>
-      
-      <output id= "output_display"  type = "submit" name="display"></output>
-      
-    </form>
-      
+    
+      <form>
+        <output id= "output_display"  type = "output" name="display"></output>
+      </form>
+      <div id="output_display"></div>
 
+      <script>
+          $(function() {
+              $('form').on('submit', function(event) {
+                  event.preventDefault();
+                  var form_data = new FormData($('form')[0]);
+                  $.ajax({
+                      type: 'POST',
+                      url: '/predict',
+                      data: form_data,
+                      contentType: false,
+                      cache: false,
+                      processData: false,
+                      success: function(response) {
+                          $('#output_display').text(response.result);
+                      }
+                  });
+              });
+          });
+      </script>     
+
+    <script>
+      function clearinput(clearID) {
+          document.getElementById(clearID).value = "";
+          
+      }
+      
+    </script>  
+        <!--Clear and Submit Button for the user-->
+    <form action = {{ url_for('fact_check') }} method ="post" enctype='multipart/form-data'>
+      <div>
+        
+        <input type="text" id="headline-input" class="input_box" placeholder="Enter your news headline here...">
+        <button class="button button_clear" onclick = "clearinput('headline-input')">Clear</button>
+        <input type="submit" class="buton button_submit" value="Fact Check"></input>
+      </div>
+    </form>
+      <script>
+          $(function() {
+              $('form[action="/fact_check"]').on('submit', function(event) {
+                  event.preventDefault();
+                  var form_data = new FormData($(this)[0]);
+                  $.ajax({
+                      type: 'POST',
+                      url: '/fact_check',
+                      data: form_data,
+                      contentType: false,
+                      cache: false,
+                      processData: false,
+                      success: function(response) {
+                          $('#output_display').text(response.result);
+                      }
+                  });
+              });
+          });
+      </script>
+ 
+    
   </body>
 </html>
